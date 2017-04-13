@@ -1,0 +1,67 @@
+<!DOCTYPE html><html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Game</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+    <h1>💬 Chat Game</h1>
+    <p>Messagerie instantannée en Node JS</p>
+
+    <ul id="messages"></ul>
+
+    <div id="users">
+      <h2>Connectés</h2>
+      <ul></ul>
+    </div>
+
+    <form id="msgform">
+      <input type="text" name="message" placeholder="Message...">
+    </form>
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+    /* Connexion au serveur Socket.io */
+    // avec la même adresse (host + port) que la  page courante
+    var socket = io(); // class fournie par socket.io.js, qu'on appele pour instancier une nouvelle connexion
+
+    /* Log lorsqu'on est bien connecté */
+    socket.on('connect', function() {//on écoute l'evenement 'connect' (prédéfini par socketio)
+        console.log('Connecté !');// on affiche connecté dans la commande
+    });
+
+    /* Réception de la nouvelle liste des connectés de type [{id, nickname}, ...] */
+    var usersUl = document.querySelector('#users ul'); //retourne le 1er élément
+    socket.on('users', function(users) { //écoute l'evenement users
+      usersUl.innerHTML = users.map(u => '<li>' + u.nickname + '</li>').join('');//affiche un user
+    });
+
+    /* envoi du message */
+    var msgform = document.getElementById("msgform"); //on récupère le formulaire
+    msgform.addEventListener("submit",function(e){ //quand l'evenement submit survient on execute la fonction
+    //addEventListener permet l'assignation de gestionnaires d'évènements sur un élément cible
+      e.preventDefault(); //empeche le comportement par defaut, cad le rechargement de la page, e est une instance de Event qui permet de gérer des erreurs (on ecrit e par convention)
+      socket.emit('msg', this.message.value); //envoi evenement 'msg' avec la valeur recupérée dans le input du formulaire
+      this.message.value = ''; // vide le champ texte
+    })
+
+    /* affichage des messages issus de l'ecoute de l'événement 'msg' */
+    socket.on('msg',function(txt){// on écoute l'événement 'msg' et récupère son argument : le contenu du message
+      var message = document.getElementById('messages');// on recupère le ul
+      var li = document.createElement('li');// on créé un li
+      li.innerText = txt; //on ajoute dans li le texte passé en paramètre
+      messages.appendChild(li); //li sera enfant de ul
+    })
+
+
+    </script>
+</body>
+
+</html>
